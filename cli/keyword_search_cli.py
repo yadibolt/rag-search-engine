@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import math
 import json
 import string
 from Tokenizer import Tokenizer
@@ -15,6 +16,17 @@ def main() -> None:
     search_parser.add_argument("query", type=str, help="Search query")
 
     build_parser = subparsers.add_parser("build", help="Build Inverted search index")
+
+    tf_parser = subparsers.add_parser("tf", help="Get term frequency")
+    tf_parser.add_argument("docId", type=int, help="Document Id")
+    tf_parser.add_argument("term", type=str, help="Term to search for")
+
+    itf_parser = subparsers.add_parser("idf", help="Get inverted term frequency score")
+    itf_parser.add_argument("term", type=str, help="Term to search for")
+
+    tfidf_parser = subparsers.add_parser("tfidf", help="Get term frequency inverted document frequency")
+    tfidf_parser.add_argument("docId", type=int, help="Document Id")
+    tfidf_parser.add_argument("term", type=str, help="Term to search for")
 
     args = parser.parse_args()
     
@@ -50,7 +62,26 @@ def main() -> None:
             invertedIndex = InvertedIndex()
 
             invertedIndex.build('./data/movies.json')
-            invertedIndex.save() 
+            invertedIndex.save()
+        
+        case "tf":
+            invertedIndex = InvertedIndex()
+            invertedIndex.load()
+            print(f"{invertedIndex.getTermFrequency(args.docId, args.term)}")
+
+        case "idf":
+            invertedIndex = InvertedIndex()
+            invertedIndex.load()
+            idf = invertedIndex.getIDFScore(args.term) 
+
+            print(f"Inverse document frequency of '{args.term}': {idf:.2f}")
+
+        case "tfidf":
+            invertedIndex = InvertedIndex()
+            invertedIndex.load()
+            tfidf = invertedIndex.getTFIDFScore(args.docId, args.term)
+
+            print(f"TF-IDF score of '{args.term}' in document '{args.docId}': {tfidf:.2f}")
         case _:
             parser.print_help()
 
